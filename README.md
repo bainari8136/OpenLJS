@@ -119,7 +119,7 @@ Each module owns its `Controllers/`, `Models/`, `Services/`, and `routes.php`. A
 
 | Role | Permissions |
 |---|---|
-| **Site Admin** | Full access to all journals, users, and settings |
+| **Super Admin** | Full access to all journals, users, and settings |
 | **Journal Manager** | Manage journals, issues, users within a journal |
 | **Section Editor** | Assign reviewers, make editorial decisions |
 | **Reviewer** | View assigned submissions, submit peer reviews |
@@ -170,10 +170,10 @@ npm run build
 php artisan serve
 ```
 
-The seeder creates default roles and permissions. Register your first user, then assign the `site-admin` role via `php artisan tinker`:
+The seeder creates default roles and permissions. Register your first user, then assign the `super-admin` role via `php artisan tinker`:
 
 ```php
-\App\Models\User::first()->assignRole('site-admin');
+\App\Models\User::first()->assignRole('super-admin');
 ```
 
 ### Queue Worker (for email notifications)
