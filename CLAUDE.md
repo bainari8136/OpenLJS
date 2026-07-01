@@ -51,7 +51,7 @@ Modules/<Name>/
 └── routes.php     # required individually from routes/web.php
 ```
 
-**Active modules** (wired into `routes/web.php`, in load order): `Users`, `Journals`, `Submissions`, `Editorial`, `Reviews`, `Copyediting`, `Issues`, `Notifications`, `Search`, `Oai`, `Metrics`, `Settings`, plus `Core` (shared `ActivityLog`, not route-based).
+**Active modules** (wired into `routes/web.php`, in load order): `Users`, `Journals`, `Submissions`, `Editorial`, `Reviews`, `Copyediting`, `Issues`, `Feeds`, `Notifications`, `Search`, `Oai`, `Metrics`, `Settings`, plus `Core` (shared `ActivityLog`, not route-based).
 
 **Article/Issue publishing lives in the `Issues` module**, not a separate `Articles`/`Publishing` module — `Issues/Models/Article.php`, `Issues/Controllers/ArticleController.php`, `Issues/Services/PublishingService.php`.
 
@@ -74,3 +74,5 @@ Modules/<Name>/
 **Metrics**: 30-day view sparklines hash visitor IPs with SHA-256 + date salt — don't store raw IPs when touching `Metrics`/`ArticleView`.
 
 **OAI-PMH**: single endpoint `GET /oai` in `app/Modules/Oai/`, implements all six OAI-PMH 2.0 verbs with Dublin Core metadata and stateless cursor-based resumption tokens (no server-side session state for pagination).
+
+**Feeds**: `app/Modules/Feeds/Controllers/FeedController.php` renders RSS 2.0 / Atom 1.0 by hand (same raw-XML + `htmlspecialchars` escaping pattern as `Oai`, no XML package). Journal feed = latest 30 published articles; issue feed = one issue's table of contents. Both require `journal->is_active`; issue feed additionally requires `issue->is_published` and `issue->journal_id === journal->id`. Feed `<link>` autodiscovery tags are injected once in `resources/js/Layouts/AppLayout.jsx` (applies to every public journal page since they all pass `journal` into that layout) rather than per-page.

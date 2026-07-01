@@ -62,6 +62,11 @@ An open-source academic journal management platform built with Laravel 11, Inert
 - Dublin Core (`oai_dc`) metadata with DOI, authors, abstract, and journal set filtering
 - Stateless cursor-based resumption tokens for large result sets
 
+### RSS / Atom Feeds
+- Per-journal feed of the 30 most recently published articles: `GET /j/{journal}/feed/rss` and `/feed/atom`
+- Per-issue table-of-contents feed: `GET /j/{journal}/issues/{issue}/feed/rss` and `/feed/atom`
+- Feed autodiscovery `<link>` tags on all public journal pages
+
 ### Metrics Dashboard
 - KPIs: active journals, total submissions, published articles, total downloads, total unique views
 - Submissions by status with proportional bar chart
@@ -108,7 +113,9 @@ app/Modules/
 ├── Notifications/   # In-app notification controller
 ├── Search/          # Unified Scout search
 ├── Oai/             # OAI-PMH 2.0 endpoint
-└── Metrics/         # Analytics dashboard
+├── Feeds/           # RSS / Atom syndication feeds
+├── Metrics/         # Analytics dashboard
+└── Settings/        # Site-wide settings
 ```
 
 Each module owns its `Controllers/`, `Models/`, `Services/`, and `routes.php`. All module route files are loaded in `routes/web.php`.
@@ -206,6 +213,8 @@ php artisan scout:import "App\Modules\Submissions\Models\Submission"
 | `/j/{journal}/current-issue` | Current issue |
 | `/j/{journal}/archive` | Issue archive |
 | `/j/{journal}/articles/{article}` | Article detail page |
+| `/j/{journal}/feed/rss`, `/feed/atom` | Journal-wide syndication feed |
+| `/j/{journal}/issues/{issue}/feed/rss`, `/feed/atom` | Issue table-of-contents feed |
 | `/oai` | OAI-PMH 2.0 endpoint |
 | `/search` | Public + authenticated search |
 
@@ -227,7 +236,7 @@ php artisan scout:import "App\Modules\Submissions\Models\Submission"
 
 ## Roadmap
 
-- [ ] RSS / Atom feeds per journal and issue
+- [x] RSS / Atom feeds per journal and issue
 - [ ] DOI pattern auto-generation and CrossRef deposit
 - [ ] Subscription and paywall management (individual + institutional IP-range)
 - [ ] JATS XML as second OAI-PMH metadata format

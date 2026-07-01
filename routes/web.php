@@ -32,6 +32,7 @@ require base_path('app/Modules/Editorial/routes.php');
 require base_path('app/Modules/Reviews/routes.php');
 require base_path('app/Modules/Copyediting/routes.php');
 require base_path('app/Modules/Issues/routes.php');
+require base_path('app/Modules/Feeds/routes.php');
 require base_path('app/Modules/Notifications/routes.php');
 require base_path('app/Modules/Search/routes.php');
 require base_path('app/Modules/Oai/routes.php');

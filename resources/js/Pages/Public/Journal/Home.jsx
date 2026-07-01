@@ -104,9 +104,10 @@ export default function Home({ journal }) {
                             <nav className="space-y-1">
                                 {[
                                     { label: 'Current Issue', href: `/j/${journal.slug}/current-issue` },
-                                    { label: 'Archives', href: `/j/${journal.slug}/archives` },
+                                    { label: 'Archives', href: `/j/${journal.slug}/archive` },
                                     { label: 'Author Guidelines', href: `/j/${journal.slug}/author-guidelines` },
                                     { label: 'About the Journal', href: `/j/${journal.slug}/about` },
+                                    { label: 'RSS Feed', href: `/j/${journal.slug}/feed/rss` },
                                 ].map((link) => (
                                     <a key={link.href} href={link.href}
                                         className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900">

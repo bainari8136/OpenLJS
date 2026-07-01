@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AppLayout({ journal, children }) {
@@ -9,6 +9,13 @@ export default function AppLayout({ journal, children }) {
 
     return (
         <div className="min-h-screen bg-white">
+            {journal?.slug && (
+                <Head>
+                    <link rel="alternate" type="application/rss+xml" title={`${journalName} - RSS Feed`} href={`/j/${journal.slug}/feed/rss`} />
+                    <link rel="alternate" type="application/atom+xml" title={`${journalName} - Atom Feed`} href={`/j/${journal.slug}/feed/atom`} />
+                </Head>
+            )}
+
             {/* Top nav */}
             <nav className="border-b border-gray-200 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
