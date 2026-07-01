@@ -1,58 +1,241 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OpenLJS — Open Laravel Journal System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+An open-source academic journal management platform built with Laravel 11, Inertia.js, React, and Tailwind CSS. OpenLJS maps the core architecture of Open Journal Systems (OJS) to modern Laravel patterns, providing a full editorial workflow from manuscript submission through peer review, copyediting, production, and final publication.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Multi-Journal Support
+- Host multiple journals under one installation, each with its own slug, sections, editorial team, and submission settings
+- Per-journal roles scoped via Spatie Laravel Permission
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Submission Workflow
+- Author submission form with manuscript upload (PDF, DOC, DOCX, ODT up to 50 MB)
+- Co-author management with ORCID validation (`\d{4}-\d{4}-\d{4}-\d{3}[\dX]`)
+- Keyword tagging, abstract, and section assignment
+- Full 12-stage status machine: `draft → submitted → initial_check → editor_assigned → under_review → revision_required → revised → accepted → rejected → copyediting → production → scheduled → published`
 
-## Learning Laravel
+### Peer Review
+- Invite, accept, decline, and cancel review assignments
+- Reviewer queue with due-date tracking
+- Structured review form: recommendation + comments to author + confidential comments to editor
+- Reviewer response notifications to assigned editors
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Editorial Decisions
+- Decisions: Accept, Reject, Request Revision, Send Back to Review
+- Full decision history with timestamps and editor attribution
+- Author revision upload with notification to editors
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Copyediting & Production
+- File stage pipeline: submission → revision → copyediting → galley
+- Permission-scoped stage management (`manage-copyediting`, `manage-production`)
+- Multiple galley file formats per article
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Issue & Article Publishing
+- Issue management with volume, number, and year metadata
+- Automatic article conversion from scheduled submissions
+- Assign articles to issues with page range metadata
+- One-click issue publish: cascades `published_at` to all articles and updates submission statuses
+- DOI assignment per article with format validation (`10.\d{4,}/\S+`)
 
-## Agentic Development
+### Notifications
+- In-app notification bell (badge + dropdown) shared via Inertia middleware
+- Email + database channels for all workflow events:
+  - Submission received (author)
+  - Editor assigned (editor)
+  - Reviewer invited / responded (reviewer / editors)
+  - Review submitted (editors)
+  - Decision made (author)
+  - Revision uploaded (editors)
+  - Article published (author)
+- Paginated notification index with mark-read and delete
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Search
+- Laravel Scout integration (database driver for development, Meilisearch-ready for production)
+- Unified search across submissions and published articles
+- Permission-aware results: editors see all submissions; authors see their own; public sees published articles only
 
-```bash
-composer require laravel/boost --dev
+### OAI-PMH Metadata Harvesting
+- Full OAI-PMH 2.0 endpoint at `GET /oai`
+- All six verbs: `Identify`, `ListMetadataFormats`, `ListSets`, `ListIdentifiers`, `ListRecords`, `GetRecord`
+- Dublin Core (`oai_dc`) metadata with DOI, authors, abstract, and journal set filtering
+- Stateless cursor-based resumption tokens for large result sets
 
-php artisan boost:install
+### Metrics Dashboard
+- KPIs: active journals, total submissions, published articles, total downloads, total unique views
+- Submissions by status with proportional bar chart
+- 30-day article views sparkline (privacy-preserving: IP hashed with SHA-256 + date salt)
+- Top 10 articles by downloads and by views
+- Recent activity feed from audit log
+
+### Audit Logging
+- `ActivityLog` records all key workflow transitions with user, journal, action, and description
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 11 |
+| Frontend | React 19 + Inertia.js |
+| Styling | Tailwind CSS v4 |
+| Auth | Laravel Breeze |
+| Roles & Permissions | Spatie Laravel Permission |
+| Search | Laravel Scout (database / Meilisearch) |
+| Notifications | Laravel Notifications (mail + database) |
+| Database (dev) | SQLite |
+| Database (prod) | MySQL / PostgreSQL |
+| Build | Vite |
+
+---
+
+## Architecture
+
+OpenLJS is a **modular monolith** — all code lives in one Laravel application, organised into self-contained modules under `app/Modules/`:
+
+```
+app/Modules/
+├── Core/            # ActivityLog model
+├── Users/           # User management, role assignment
+├── Journals/        # Journal CRUD, sections, public journal pages
+├── Submissions/     # Submission workflow, file upload, status machine
+├── Editorial/       # Editor assignment, editorial decisions
+├── Reviews/         # Review assignments, reviewer queue
+├── Copyediting/     # File stage management
+├── Issues/          # Issue & article management, publishing
+├── Notifications/   # In-app notification controller
+├── Search/          # Unified Scout search
+├── Oai/             # OAI-PMH 2.0 endpoint
+└── Metrics/         # Analytics dashboard
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Each module owns its `Controllers/`, `Models/`, `Services/`, and `routes.php`. All module route files are loaded in `routes/web.php`.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Roles & Permissions
 
-## Code of Conduct
+| Role | Permissions |
+|---|---|
+| **Site Admin** | Full access to all journals, users, and settings |
+| **Journal Manager** | Manage journals, issues, users within a journal |
+| **Section Editor** | Assign reviewers, make editorial decisions |
+| **Reviewer** | View assigned submissions, submit peer reviews |
+| **Author** | Submit manuscripts, track own submission progress |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Permissions enforced via `$user->can('permission-name')` and Laravel Policies on every controller action.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Installation
+
+### Requirements
+- PHP 8.2+
+- Composer
+- Node.js 20+
+- SQLite (dev) or MySQL/PostgreSQL (production)
+
+### Steps
+
+```bash
+git clone <repo-url> openljs
+cd openljs
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+```
+
+Configure your `.env`:
+
+```env
+DB_CONNECTION=sqlite
+# DB_DATABASE=/absolute/path/to/database.sqlite
+
+MAIL_MAILER=log          # use 'smtp' in production
+QUEUE_CONNECTION=sync    # use 'database' or 'redis' in production
+
+SCOUT_DRIVER=database    # use 'meilisearch' in production
+```
+
+```bash
+touch database/database.sqlite   # SQLite only
+
+php artisan migrate --seed
+npm run build
+php artisan serve
+```
+
+The seeder creates default roles and permissions. Register your first user, then assign the `site-admin` role via `php artisan tinker`:
+
+```php
+\App\Models\User::first()->assignRole('site-admin');
+```
+
+### Queue Worker (for email notifications)
+
+```bash
+php artisan queue:work
+```
+
+### Meilisearch (production search)
+
+```bash
+# Set in .env:
+SCOUT_DRIVER=meilisearch
+MEILISEARCH_HOST=http://localhost:7700
+
+php artisan scout:import "App\Modules\Issues\Models\Article"
+php artisan scout:import "App\Modules\Submissions\Models\Submission"
+```
+
+---
+
+## Public URLs
+
+| Path | Description |
+|---|---|
+| `/` | Welcome / journal listing |
+| `/j/{journal}/` | Journal home page |
+| `/j/{journal}/about` | About page |
+| `/j/{journal}/submission-guidelines` | Author guidelines |
+| `/j/{journal}/current-issue` | Current issue |
+| `/j/{journal}/archive` | Issue archive |
+| `/j/{journal}/articles/{article}` | Article detail page |
+| `/oai` | OAI-PMH 2.0 endpoint |
+| `/search` | Public + authenticated search |
+
+## Dashboard URLs
+
+| Path | Description |
+|---|---|
+| `/dashboard` | Author / editor home |
+| `/submissions` | Submission list |
+| `/editorial` | Editorial queue (editors) |
+| `/reviews` | Reviewer queue |
+| `/issues` | Issue management |
+| `/notifications` | Notification inbox |
+| `/metrics` | Analytics dashboard (admins) |
+| `/users` | User management (admins) |
+| `/journals` | Journal management (admins) |
+
+---
+
+## Roadmap
+
+- [ ] RSS / Atom feeds per journal and issue
+- [ ] DOI pattern auto-generation and CrossRef deposit
+- [ ] Subscription and paywall management (individual + institutional IP-range)
+- [ ] JATS XML as second OAI-PMH metadata format
+- [ ] Multi-lingual metadata (`spatie/laravel-translatable`)
+- [ ] COUNTER-compliant usage statistics with robot filtering
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
