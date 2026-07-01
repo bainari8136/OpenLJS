@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 
 // Admin issue management
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Articles dashboard
+    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
+
     Route::prefix('issues')->name('issues.')->group(function () {
         Route::get('/', [IssueController::class, 'index'])->name('index');
         Route::post('/', [IssueController::class, 'store'])->name('store');
