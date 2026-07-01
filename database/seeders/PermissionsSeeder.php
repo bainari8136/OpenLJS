@@ -13,6 +13,7 @@ class PermissionsSeeder extends Seeder
         $permissions = [
             // System
             'manage-system',
+            'manage-settings',
             'manage-journals',
             'view-journals',
 
@@ -56,6 +57,8 @@ class PermissionsSeeder extends Seeder
             'super-admin' => $permissions,
 
             'journal-manager' => [
+                'manage-system',
+                'manage-settings',
                 'manage-journals',
                 'view-journals',
                 'manage-users',
