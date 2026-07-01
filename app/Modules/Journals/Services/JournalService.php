@@ -4,6 +4,7 @@ namespace App\Modules\Journals\Services;
 
 use App\Models\User;
 use App\Modules\Journals\Models\Journal;
+use App\Modules\Journals\Models\JournalEditorialMember;
 use App\Modules\Journals\Models\JournalSection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -60,5 +61,25 @@ class JournalService
     public function deleteSection(JournalSection $section): void
     {
         $section->delete();
+    }
+
+    public function createEditorialMember(Journal $journal, array $data): JournalEditorialMember
+    {
+        $data['journal_id'] = $journal->id;
+        $data['sort_order'] = $journal->editorialMembers()->max('sort_order') + 1;
+
+        return JournalEditorialMember::create($data);
+    }
+
+    public function updateEditorialMember(JournalEditorialMember $member, array $data): JournalEditorialMember
+    {
+        $member->update($data);
+
+        return $member->fresh();
+    }
+
+    public function deleteEditorialMember(JournalEditorialMember $member): void
+    {
+        $member->delete();
     }
 }

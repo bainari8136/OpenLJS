@@ -10,6 +10,11 @@ An open-source academic journal management platform built with Laravel 11, Inert
 - Host multiple journals under one installation, each with its own slug, sections, editorial team, and submission settings
 - Per-journal roles scoped via Spatie Laravel Permission
 
+### Journal Masthead & Editorial Team
+- Publishing details (country, publisher, website) shown on the public About page
+- Curated, orderable editorial team roster (name, masthead title, affiliation, ORCID, bio) — independent of user accounts, so board members don't need a login
+- Public masthead page at `/j/{journal}/editorial-team`; only members marked active are shown
+
 ### Submission Workflow
 - Author submission form with manuscript upload (PDF, DOC, DOCX, ODT up to 50 MB)
 - Co-author management with ORCID validation (`\d{4}-\d{4}-\d{4}-\d{3}[\dX]`)
@@ -209,7 +214,8 @@ php artisan scout:import "App\Modules\Submissions\Models\Submission"
 | `/` | Welcome / journal listing |
 | `/j/{journal}/` | Journal home page |
 | `/j/{journal}/about` | About page |
-| `/j/{journal}/submission-guidelines` | Author guidelines |
+| `/j/{journal}/author-guidelines` | Author guidelines |
+| `/j/{journal}/editorial-team` | Editorial team / masthead |
 | `/j/{journal}/current-issue` | Current issue |
 | `/j/{journal}/archive` | Issue archive |
 | `/j/{journal}/articles/{article}` | Article detail page |

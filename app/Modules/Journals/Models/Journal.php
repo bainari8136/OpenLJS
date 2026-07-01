@@ -11,13 +11,14 @@ use Illuminate\Support\Str;
 class Journal extends Model
 {
     protected $fillable = [
-        'title', 'slug', 'acronym', 'description', 'author_guidelines',
-        'review_policy', 'issn_print', 'issn_online', 'logo_path',
-        'cover_image_path', 'is_active', 'submissions_enabled', 'created_by',
+        'title', 'slug', 'acronym', 'country', 'publisher', 'website_url',
+        'description', 'author_guidelines', 'review_policy', 'issn_print',
+        'issn_online', 'logo_path', 'cover_image_path', 'is_active',
+        'submissions_enabled', 'created_by',
     ];
 
     protected $casts = [
-        'is_active'           => 'boolean',
+        'is_active' => 'boolean',
         'submissions_enabled' => 'boolean',
     ];
 
@@ -43,6 +44,16 @@ class Journal extends Model
     public function userRoles(): HasMany
     {
         return $this->hasMany(JournalUserRole::class);
+    }
+
+    public function editorialMembers(): HasMany
+    {
+        return $this->hasMany(JournalEditorialMember::class)->orderBy('sort_order');
+    }
+
+    public function activeEditorialMembers(): HasMany
+    {
+        return $this->hasMany(JournalEditorialMember::class)->where('is_active', true)->orderBy('sort_order');
     }
 
     public function creator(): BelongsTo

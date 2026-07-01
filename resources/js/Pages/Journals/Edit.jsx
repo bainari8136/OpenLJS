@@ -6,13 +6,16 @@ import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-const TABS = ['General', 'Sections', 'Guidelines', 'Policies'];
+const TABS = ['General', 'Sections', 'Editorial Team', 'Guidelines', 'Policies'];
 
 // ── General settings tab ──────────────────────────────────────────────────────
 function GeneralTab({ journal }) {
     const { data, setData, patch, post, processing, errors } = useForm({
         title:               journal.title,
         acronym:             journal.acronym ?? '',
+        country:             journal.country ?? '',
+        publisher:           journal.publisher ?? '',
+        website_url:         journal.website_url ?? '',
         description:         journal.description ?? '',
         issn_print:          journal.issn_print ?? '',
         issn_online:         journal.issn_online ?? '',
@@ -75,6 +78,25 @@ function GeneralTab({ journal }) {
                     <InputLabel htmlFor="issn_online" value="ISSN Online" />
                     <TextInput id="issn_online" className="mt-1 block w-full" value={data.issn_online}
                         onChange={(e) => setData('issn_online', e.target.value)} placeholder="0000-0000" />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <div>
+                    <InputLabel htmlFor="country" value="Country" />
+                    <TextInput id="country" className="mt-1 block w-full" value={data.country}
+                        onChange={(e) => setData('country', e.target.value)} placeholder="e.g. United States" />
+                </div>
+                <div>
+                    <InputLabel htmlFor="publisher" value="Publisher" />
+                    <TextInput id="publisher" className="mt-1 block w-full" value={data.publisher}
+                        onChange={(e) => setData('publisher', e.target.value)} placeholder="e.g. University Press" />
+                </div>
+                <div>
+                    <InputLabel htmlFor="website_url" value="Publisher Website" />
+                    <TextInput id="website_url" type="url" className="mt-1 block w-full" value={data.website_url}
+                        onChange={(e) => setData('website_url', e.target.value)} placeholder="https://…" />
+                    <InputError className="mt-1" message={errors.website_url} />
                 </div>
             </div>
 
@@ -189,6 +211,117 @@ function SectionsTab({ journal }) {
     );
 }
 
+// ── Editorial Team tab ────────────────────────────────────────────────────────
+function EditorialTeamTab({ journal }) {
+    const [adding, setAdding] = useState(false);
+    const { data, setData, post, reset, processing, errors } = useForm({
+        name: '', title: '', affiliation: '', email: '', orcid: '', bio: '', is_active: true,
+    });
+
+    const submit = (e) => {
+        e.preventDefault();
+        post(`/journals/${journal.slug}/editorial-members`, {
+            onSuccess: () => { reset(); setAdding(false); },
+        });
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500">
+                    {journal.editorial_members.length} member{journal.editorial_members.length !== 1 ? 's' : ''}
+                </p>
+                <button onClick={() => setAdding(!adding)}
+                    className="rounded-lg bg-blue-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-800">
+                    + Add Member
+                </button>
+            </div>
+
+            {adding && (
+                <form onSubmit={submit} className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+                    <h4 className="text-sm font-semibold text-gray-900">New Editorial Team Member</h4>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <InputLabel htmlFor="m-name" value="Name *" />
+                            <TextInput id="m-name" className="mt-1 block w-full" value={data.name}
+                                onChange={(e) => setData('name', e.target.value)} required isFocused
+                                placeholder="e.g. Jane Doe" />
+                            <InputError className="mt-1" message={errors.name} />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="m-title" value="Masthead Title *" />
+                            <TextInput id="m-title" className="mt-1 block w-full" value={data.title}
+                                onChange={(e) => setData('title', e.target.value)} required
+                                placeholder="e.g. Editor-in-Chief" />
+                            <InputError className="mt-1" message={errors.title} />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="m-affiliation" value="Affiliation" />
+                            <TextInput id="m-affiliation" className="mt-1 block w-full" value={data.affiliation}
+                                onChange={(e) => setData('affiliation', e.target.value)} placeholder="e.g. MIT" />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="m-orcid" value="ORCID" />
+                            <TextInput id="m-orcid" className="mt-1 block w-full" value={data.orcid}
+                                onChange={(e) => setData('orcid', e.target.value)} placeholder="0000-0000-0000-0000" />
+                            <InputError className="mt-1" message={errors.orcid} />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="m-email" value="Email" />
+                            <TextInput id="m-email" type="email" className="mt-1 block w-full" value={data.email}
+                                onChange={(e) => setData('email', e.target.value)} />
+                            <InputError className="mt-1" message={errors.email} />
+                        </div>
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="m-bio" value="Bio" />
+                        <textarea id="m-bio" rows={2}
+                            className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            value={data.bio} onChange={(e) => setData('bio', e.target.value)} />
+                    </div>
+                    <div className="flex gap-3">
+                        <PrimaryButton disabled={processing}>Add</PrimaryButton>
+                        <button type="button" onClick={() => setAdding(false)}
+                            className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                    </div>
+                </form>
+            )}
+
+            {journal.editorial_members.length === 0 && !adding ? (
+                <div className="rounded-lg border-2 border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
+                    No editorial team members yet. Add one to populate the public masthead.
+                </div>
+            ) : (
+                <div className="divide-y divide-gray-200 rounded-xl border border-gray-200 bg-white overflow-hidden">
+                    {journal.editorial_members.map((member) => (
+                        <div key={member.id} className="flex items-center justify-between px-5 py-3">
+                            <div>
+                                <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    {member.title}{member.affiliation ? ` — ${member.affiliation}` : ''}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className={`text-xs font-medium ${member.is_active ? 'text-green-600' : 'text-gray-400'}`}>
+                                    {member.is_active ? 'Public' : 'Hidden'}
+                                </span>
+                                <Link
+                                    href={`/journals/${journal.slug}/editorial-members/${member.id}`}
+                                    method="delete" as="button"
+                                    className="text-xs text-red-500 hover:text-red-700"
+                                    onClick={(e) => { if (!confirm('Remove this editorial team member?')) e.preventDefault(); }}
+                                >
+                                    Remove
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ── Guidelines tab ────────────────────────────────────────────────────────────
 function GuidelinesTab({ journal }) {
     const { data, setData, patch, processing, errors, recentlySuccessful } = useForm({
@@ -285,10 +418,11 @@ export default function Edit({ journal }) {
                 </div>
 
                 <div className="rounded-xl border border-gray-200 bg-white p-6">
-                    {activeTab === 'General'    && <GeneralTab journal={journal} />}
-                    {activeTab === 'Sections'   && <SectionsTab journal={journal} />}
-                    {activeTab === 'Guidelines' && <GuidelinesTab journal={journal} />}
-                    {activeTab === 'Policies'   && <PoliciesTab journal={journal} />}
+                    {activeTab === 'General'        && <GeneralTab journal={journal} />}
+                    {activeTab === 'Sections'       && <SectionsTab journal={journal} />}
+                    {activeTab === 'Editorial Team' && <EditorialTeamTab journal={journal} />}
+                    {activeTab === 'Guidelines'     && <GuidelinesTab journal={journal} />}
+                    {activeTab === 'Policies'       && <PoliciesTab journal={journal} />}
                 </div>
             </div>
         </DashboardLayout>

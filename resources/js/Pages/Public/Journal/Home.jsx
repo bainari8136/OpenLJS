@@ -107,6 +107,7 @@ export default function Home({ journal }) {
                                     { label: 'Archives', href: `/j/${journal.slug}/archive` },
                                     { label: 'Author Guidelines', href: `/j/${journal.slug}/author-guidelines` },
                                     { label: 'About the Journal', href: `/j/${journal.slug}/about` },
+                                    { label: 'Editorial Team', href: `/j/${journal.slug}/editorial-team` },
                                     { label: 'RSS Feed', href: `/j/${journal.slug}/feed/rss` },
                                 ].map((link) => (
                                     <a key={link.href} href={link.href}

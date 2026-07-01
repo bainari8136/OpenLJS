@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Journals\Controllers\JournalController;
+use App\Modules\Journals\Controllers\JournalEditorialMemberController;
 use App\Modules\Journals\Controllers\JournalSectionController;
 use App\Modules\Journals\Controllers\PublicJournalController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,11 @@ Route::middleware(['auth', 'verified'])->prefix('journals')->name('journals.')->
     Route::post('/{journal}/sections', [JournalSectionController::class, 'store'])->name('sections.store');
     Route::patch('/{journal}/sections/{section}', [JournalSectionController::class, 'update'])->name('sections.update');
     Route::delete('/{journal}/sections/{section}', [JournalSectionController::class, 'destroy'])->name('sections.destroy');
+
+    // Editorial team / masthead (nested under journal)
+    Route::post('/{journal}/editorial-members', [JournalEditorialMemberController::class, 'store'])->name('editorial-members.store');
+    Route::patch('/{journal}/editorial-members/{member}', [JournalEditorialMemberController::class, 'update'])->name('editorial-members.update');
+    Route::delete('/{journal}/editorial-members/{member}', [JournalEditorialMemberController::class, 'destroy'])->name('editorial-members.destroy');
 });
 
 // Public journal pages — keep after admin routes to avoid slug conflicts
@@ -25,4 +31,5 @@ Route::prefix('j/{journal:slug}')->name('journal.')->group(function () {
     Route::get('/', [PublicJournalController::class, 'home'])->name('home');
     Route::get('/about', [PublicJournalController::class, 'about'])->name('about');
     Route::get('/author-guidelines', [PublicJournalController::class, 'guidelines'])->name('guidelines');
+    Route::get('/editorial-team', [PublicJournalController::class, 'editorialTeam'])->name('editorial_team');
 });

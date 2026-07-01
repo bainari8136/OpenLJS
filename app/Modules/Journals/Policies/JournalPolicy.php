@@ -36,4 +36,9 @@ class JournalPolicy
     {
         return $user->can('manage-journals');
     }
+
+    public function manageEditorialTeam(User $user, Journal $journal): bool
+    {
+        return $user->can('manage-journals');
+    }
 }

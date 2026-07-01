@@ -6,6 +6,7 @@ export default function AppLayout({ journal, children }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const journalName = journal?.title ?? 'OpenLJS';
+    const j = (path) => journal?.slug ? `/j/${journal.slug}${path}` : '/';
 
     return (
         <div className="min-h-screen bg-white">
@@ -35,16 +36,16 @@ export default function AppLayout({ journal, children }) {
                             <Link href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Home
                             </Link>
-                            <Link href="/current-issue" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            <Link href={j('/current-issue')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Current Issue
                             </Link>
-                            <Link href="/archives" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            <Link href={j('/archive')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Archives
                             </Link>
-                            <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            <Link href={j('/about')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 About
                             </Link>
-                            <Link href="/editorial-team" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            <Link href={j('/editorial-team')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Editorial Team
                             </Link>
                         </div>
@@ -109,17 +110,21 @@ export default function AppLayout({ journal, children }) {
                 {mobileMenuOpen && (
                     <div className="border-t border-gray-200 sm:hidden">
                         <div className="space-y-1 px-4 pb-4 pt-2">
-                            {['/', '/current-issue', '/archives', '/about', '/editorial-team'].map(
-                                (href) => (
-                                    <Link
-                                        key={href}
-                                        href={href}
-                                        className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                    >
-                                        {href === '/' ? 'Home' : href.slice(1).replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                                    </Link>
-                                ),
-                            )}
+                            {[
+                                { label: 'Home', href: '/' },
+                                { label: 'Current Issue', href: j('/current-issue') },
+                                { label: 'Archives', href: j('/archive') },
+                                { label: 'About', href: j('/about') },
+                                { label: 'Editorial Team', href: j('/editorial-team') },
+                            ].map(({ label, href }) => (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    {label}
+                                </Link>
+                            ))}
                             <div className="border-t border-gray-200 pt-3">
                                 {auth.user ? (
                                     <Link href="/dashboard" className="block rounded-md bg-blue-900 px-3 py-2 text-sm font-medium text-white">

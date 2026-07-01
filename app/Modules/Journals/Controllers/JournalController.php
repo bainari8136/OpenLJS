@@ -23,14 +23,14 @@ class JournalController extends Controller
             ->orderBy('title')
             ->get()
             ->map(fn ($j) => [
-                'id'                  => $j->id,
-                'title'               => $j->title,
-                'slug'                => $j->slug,
-                'acronym'             => $j->acronym,
-                'is_active'           => $j->is_active,
+                'id' => $j->id,
+                'title' => $j->title,
+                'slug' => $j->slug,
+                'acronym' => $j->acronym,
+                'is_active' => $j->is_active,
                 'submissions_enabled' => $j->submissions_enabled,
-                'sections_count'      => $j->sections_count,
-                'logo_path'           => $j->logo_path ? asset('storage/' . $j->logo_path) : null,
+                'sections_count' => $j->sections_count,
+                'logo_path' => $j->logo_path ? asset('storage/'.$j->logo_path) : null,
             ]);
 
         return Inertia::render('Journals/Index', ['journals' => $journals]);
@@ -56,26 +56,40 @@ class JournalController extends Controller
         $this->authorize('update', $journal);
 
         return Inertia::render('Journals/Edit', [
-            'journal'  => [
-                'id'                  => $journal->id,
-                'title'               => $journal->title,
-                'slug'                => $journal->slug,
-                'acronym'             => $journal->acronym,
-                'description'         => $journal->description,
-                'author_guidelines'   => $journal->author_guidelines,
-                'review_policy'       => $journal->review_policy,
-                'issn_print'          => $journal->issn_print,
-                'issn_online'         => $journal->issn_online,
-                'is_active'           => $journal->is_active,
+            'journal' => [
+                'id' => $journal->id,
+                'title' => $journal->title,
+                'slug' => $journal->slug,
+                'acronym' => $journal->acronym,
+                'country' => $journal->country,
+                'publisher' => $journal->publisher,
+                'website_url' => $journal->website_url,
+                'description' => $journal->description,
+                'author_guidelines' => $journal->author_guidelines,
+                'review_policy' => $journal->review_policy,
+                'issn_print' => $journal->issn_print,
+                'issn_online' => $journal->issn_online,
+                'is_active' => $journal->is_active,
                 'submissions_enabled' => $journal->submissions_enabled,
-                'logo_url'            => $journal->logo_path ? asset('storage/' . $journal->logo_path) : null,
-                'sections'            => $journal->sections->map(fn ($s) => [
-                    'id'          => $s->id,
-                    'title'       => $s->title,
-                    'slug'        => $s->slug,
+                'logo_url' => $journal->logo_path ? asset('storage/'.$journal->logo_path) : null,
+                'sections' => $journal->sections->map(fn ($s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'slug' => $s->slug,
                     'description' => $s->description,
-                    'is_active'   => $s->is_active,
-                    'sort_order'  => $s->sort_order,
+                    'is_active' => $s->is_active,
+                    'sort_order' => $s->sort_order,
+                ]),
+                'editorial_members' => $journal->editorialMembers->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'title' => $m->title,
+                    'affiliation' => $m->affiliation,
+                    'email' => $m->email,
+                    'orcid' => $m->orcid,
+                    'bio' => $m->bio,
+                    'is_active' => $m->is_active,
+                    'sort_order' => $m->sort_order,
                 ]),
             ],
         ]);
