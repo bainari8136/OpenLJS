@@ -24,7 +24,8 @@ export default function EditorialTeam({ journal, members }) {
                                     <p className="mt-1 text-xs text-gray-400">ORCID: {member.orcid}</p>
                                 )}
                                 {member.bio && (
-                                    <p className="mt-3 text-sm leading-relaxed text-gray-600 whitespace-pre-line">{member.bio}</p>
+                                    <div className="prose prose-sm mt-3 max-w-none text-gray-600"
+                                        dangerouslySetInnerHTML={{ __html: member.bio }} />
                                 )}
                             </div>
                         ))}

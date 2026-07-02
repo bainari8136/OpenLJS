@@ -2,13 +2,21 @@
 
 namespace App\Modules\Journals\Requests;
 
+use App\Modules\Journals\Requests\Concerns\SanitizesHtmlFields;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEditorialMemberRequest extends FormRequest
 {
+    use SanitizesHtmlFields;
+
     public function authorize(): bool
     {
         return $this->user()->can('manage-journals');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizeHtmlFields(['bio']);
     }
 
     public function rules(): array

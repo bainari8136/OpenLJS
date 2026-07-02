@@ -5,6 +5,7 @@ import { useState } from 'react';
 const TABS = [
     { id: 'general',     label: 'General' },
     { id: 'submissions', label: 'Submissions' },
+    { id: 'website',     label: 'Website' },
     { id: 'email',       label: 'Email' },
     { id: 'system',      label: 'System' },
 ];
@@ -207,6 +208,167 @@ function SubmissionsTab({ settings }) {
     );
 }
 
+function WebsiteTab({ settings, timezones, dateFormats }) {
+    const form = useForm({
+        tab:                  'website',
+        site_logo:            null,
+        site_favicon:         null,
+        footer_text:          settings.footer_text ?? '',
+        social_twitter:       settings.social_twitter ?? '',
+        social_facebook:      settings.social_facebook ?? '',
+        social_linkedin:      settings.social_linkedin ?? '',
+        social_instagram:     settings.social_instagram ?? '',
+        maintenance_mode:     settings.maintenance_mode === '1' || settings.maintenance_mode === true,
+        maintenance_message:  settings.maintenance_message ?? '',
+        site_url:             settings.site_url ?? '',
+        default_timezone:     settings.default_timezone ?? 'UTC',
+        default_date_format:  settings.default_date_format ?? 'Y-m-d',
+    });
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        form.post(route('settings.update'), { forceFormData: true });
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <Section title="Branding" description="Site-wide logo and favicon, shown across all pages and journals.">
+                <Field label="Site Logo" hint="Recommended: square PNG or SVG, max 2 MB." error={form.errors.site_logo}>
+                    <div className="flex items-center gap-4">
+                        {settings.site_logo_url && (
+                            <img src={settings.site_logo_url} alt="Site logo" className="h-12 w-12 rounded-lg object-contain border border-gray-200" />
+                        )}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => form.setData('site_logo', e.target.files[0])}
+                            className="text-sm text-gray-500"
+                        />
+                    </div>
+                </Field>
+                <Field label="Favicon" hint="Recommended: 32×32 PNG or ICO, max 512 KB." error={form.errors.site_favicon}>
+                    <div className="flex items-center gap-4">
+                        {settings.site_favicon_url && (
+                            <img src={settings.site_favicon_url} alt="Favicon" className="h-8 w-8 rounded border border-gray-200" />
+                        )}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => form.setData('site_favicon', e.target.files[0])}
+                            className="text-sm text-gray-500"
+                        />
+                    </div>
+                </Field>
+            </Section>
+
+            <Section title="Footer & Social Links" description="Shown in the site footer on public-facing pages.">
+                <Field label="Footer Text" hint="e.g. copyright notice." error={form.errors.footer_text}>
+                    <textarea
+                        value={form.data.footer_text}
+                        onChange={e => form.setData('footer_text', e.target.value)}
+                        rows={2}
+                        className="w-full max-w-xl rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                    />
+                </Field>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <Field label="Twitter / X URL" error={form.errors.social_twitter}>
+                        <input type="url" value={form.data.social_twitter}
+                            onChange={e => form.setData('social_twitter', e.target.value)}
+                            placeholder="https://x.com/…"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+                    </Field>
+                    <Field label="Facebook URL" error={form.errors.social_facebook}>
+                        <input type="url" value={form.data.social_facebook}
+                            onChange={e => form.setData('social_facebook', e.target.value)}
+                            placeholder="https://facebook.com/…"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+                    </Field>
+                    <Field label="LinkedIn URL" error={form.errors.social_linkedin}>
+                        <input type="url" value={form.data.social_linkedin}
+                            onChange={e => form.setData('social_linkedin', e.target.value)}
+                            placeholder="https://linkedin.com/…"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+                    </Field>
+                    <Field label="Instagram URL" error={form.errors.social_instagram}>
+                        <input type="url" value={form.data.social_instagram}
+                            onChange={e => form.setData('social_instagram', e.target.value)}
+                            placeholder="https://instagram.com/…"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+                    </Field>
+                </div>
+            </Section>
+
+            <Section title="Site URL & Locale" description="Base URL override and defaults used across the site.">
+                <Field label="Site URL" hint="Leave blank to use the server's APP_URL." error={form.errors.site_url}>
+                    <input type="url" value={form.data.site_url}
+                        onChange={e => form.setData('site_url', e.target.value)}
+                        placeholder="https://journals.example.org"
+                        className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+                </Field>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <Field label="Default Timezone" error={form.errors.default_timezone}>
+                        <select value={form.data.default_timezone}
+                            onChange={e => form.setData('default_timezone', e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                            {timezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                        </select>
+                    </Field>
+                    <Field label="Default Date Format" error={form.errors.default_date_format}>
+                        <select value={form.data.default_date_format}
+                            onChange={e => form.setData('default_date_format', e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                            {Object.entries(dateFormats).map(([fmt, example]) => (
+                                <option key={fmt} value={fmt}>{example}</option>
+                            ))}
+                        </select>
+                    </Field>
+                </div>
+            </Section>
+
+            <Section title="Maintenance Mode" description="Temporarily take the public site offline for visitors. Logged-in users keep access.">
+                <Field label="Enable maintenance mode">
+                    <label className="flex cursor-pointer items-center gap-3">
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                className="sr-only"
+                                checked={form.data.maintenance_mode}
+                                onChange={e => form.setData('maintenance_mode', e.target.checked)}
+                            />
+                            <div className={`h-5 w-9 rounded-full transition-colors ${form.data.maintenance_mode ? 'bg-red-600' : 'bg-gray-300'}`} />
+                            <div className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${form.data.maintenance_mode ? 'translate-x-4' : ''}`} />
+                        </div>
+                        <span className="text-sm text-gray-700">
+                            {form.data.maintenance_mode ? 'On — public site shows a maintenance notice' : 'Off — site is publicly accessible'}
+                        </span>
+                    </label>
+                </Field>
+                {form.data.maintenance_mode && (
+                    <Field label="Maintenance Message" hint="Shown to visitors while the site is offline." error={form.errors.maintenance_message}>
+                        <textarea
+                            value={form.data.maintenance_message}
+                            onChange={e => form.setData('maintenance_message', e.target.value)}
+                            rows={2}
+                            placeholder="We're currently performing scheduled maintenance. Please check back shortly."
+                            className="w-full max-w-xl rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                        />
+                    </Field>
+                )}
+            </Section>
+
+            <div>
+                <button
+                    type="submit"
+                    disabled={form.processing}
+                    className="rounded-lg bg-blue-900 px-5 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+                >
+                    {form.processing ? 'Saving…' : 'Save Website Settings'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
 function EmailTab({ mail }) {
     return (
         <div className="space-y-6">
@@ -259,7 +421,7 @@ function SystemTab({ system }) {
     );
 }
 
-export default function Index({ settings, mail, system }) {
+export default function Index({ settings, mail, system, timezones, dateFormats }) {
     const [activeTab, setActiveTab] = useState('general');
     const { props } = usePage();
     const flash = props.flash ?? {};
@@ -298,6 +460,7 @@ export default function Index({ settings, mail, system }) {
 
                 {activeTab === 'general'     && <GeneralTab settings={settings} />}
                 {activeTab === 'submissions' && <SubmissionsTab settings={settings} />}
+                {activeTab === 'website'     && <WebsiteTab settings={settings} timezones={timezones} dateFormats={dateFormats} />}
                 {activeTab === 'email'       && <EmailTab mail={mail} />}
                 {activeTab === 'system'      && <SystemTab system={system} />}
             </div>

@@ -44,9 +44,8 @@ export default function Home({ journal }) {
                         {journal.description && (
                             <section>
                                 <h2 className="text-xl font-semibold text-gray-900 mb-3">Aims & Scope</h2>
-                                <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap">
-                                    {journal.description}
-                                </div>
+                                <div className="prose prose-sm max-w-none text-gray-600"
+                                    dangerouslySetInnerHTML={{ __html: journal.description }} />
                             </section>
                         )}
 
@@ -60,7 +59,8 @@ export default function Home({ journal }) {
                                             className="rounded-xl border border-gray-200 bg-white p-5">
                                             <h3 className="font-semibold text-gray-900">{section.title}</h3>
                                             {section.description && (
-                                                <p className="mt-1 text-sm text-gray-600">{section.description}</p>
+                                                <div className="prose prose-sm mt-1 max-w-none text-gray-600"
+                                                    dangerouslySetInnerHTML={{ __html: section.description }} />
                                             )}
                                         </div>
                                     ))}

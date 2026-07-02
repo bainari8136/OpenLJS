@@ -2,6 +2,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import RichTextEditor from '@/Components/RichTextEditor';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -75,12 +76,12 @@ export default function Create() {
 
                         <div>
                             <InputLabel htmlFor="description" value="Description" />
-                            <textarea
+                            <RichTextEditor
                                 id="description"
                                 rows={4}
-                                className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1"
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                onChange={(html) => setData('description', html)}
                                 placeholder="Brief description of the journal's scope and aims..."
                             />
                             <InputError className="mt-2" message={errors.description} />

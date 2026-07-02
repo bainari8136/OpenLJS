@@ -2,9 +2,15 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import RichTextEditor from '@/Components/RichTextEditor';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+
+// Strips markup for short list-preview text (the editor stores/renders HTML, but previews are plain).
+function stripHtml(html) {
+    return html ? html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+}
 
 const TABS = ['General', 'Contact', 'Sections', 'Categories', 'Editorial Team', 'Guidelines', 'Policies'];
 
@@ -117,9 +123,8 @@ function GeneralTab({ journal }) {
 
             <div>
                 <InputLabel htmlFor="description" value="Description" />
-                <textarea id="description" rows={4}
-                    className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                <RichTextEditor id="description" rows={4} className="mt-1" value={data.description}
+                    onChange={(html) => setData('description', html)} />
                 <InputError className="mt-2" message={errors.description} />
             </div>
 
@@ -287,15 +292,13 @@ function SectionsTab({ journal }) {
                     </div>
                     <div>
                         <InputLabel htmlFor="s-desc" value="Description" />
-                        <textarea id="s-desc" rows={2}
-                            className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                        <RichTextEditor id="s-desc" rows={2} className="mt-1" value={data.description}
+                            onChange={(html) => setData('description', html)} />
                     </div>
                     <div>
                         <InputLabel htmlFor="s-policy" value="Section Policy" />
-                        <textarea id="s-policy" rows={2}
-                            className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={data.policy} onChange={(e) => setData('policy', e.target.value)}
+                        <RichTextEditor id="s-policy" rows={2} className="mt-1" value={data.policy}
+                            onChange={(html) => setData('policy', html)}
                             placeholder="Editorial standards specific to this section" />
                         <InputError className="mt-1" message={errors.policy} />
                     </div>
@@ -341,7 +344,7 @@ function SectionsTab({ journal }) {
                                     {section.abbreviation && <span className="ml-1 text-xs text-gray-400">({section.abbreviation})</span>}
                                 </p>
                                 {section.description && (
-                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{section.description}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{stripHtml(section.description)}</p>
                                 )}
                                 <p className="text-xs text-gray-400 mt-0.5">
                                     {section.identify_as && `${section.identify_as} · `}
@@ -424,9 +427,8 @@ function CategoriesTab({ journal }) {
                     </div>
                     <div>
                         <InputLabel htmlFor="c-desc" value="Description" />
-                        <textarea id="c-desc" rows={2}
-                            className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                        <RichTextEditor id="c-desc" rows={2} className="mt-1" value={data.description}
+                            onChange={(html) => setData('description', html)} />
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
@@ -465,7 +467,7 @@ function CategoriesTab({ journal }) {
                             <div>
                                 <p className="text-sm font-medium text-gray-900">{category.name}</p>
                                 {category.description && (
-                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{category.description}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{stripHtml(category.description)}</p>
                                 )}
                             </div>
                             <div className="flex items-center gap-3">
@@ -553,9 +555,8 @@ function EditorialTeamTab({ journal }) {
                     </div>
                     <div>
                         <InputLabel htmlFor="m-bio" value="Bio" />
-                        <textarea id="m-bio" rows={2}
-                            className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={data.bio} onChange={(e) => setData('bio', e.target.value)} />
+                        <RichTextEditor id="m-bio" rows={2} className="mt-1" value={data.bio}
+                            onChange={(html) => setData('bio', html)} />
                     </div>
                     <div className="flex gap-3">
                         <PrimaryButton disabled={processing}>Add</PrimaryButton>
@@ -616,11 +617,9 @@ function GuidelinesTab({ journal }) {
         <form onSubmit={submit} className="space-y-4">
             <div>
                 <InputLabel htmlFor="author_guidelines" value="Author Guidelines" />
-                <p className="mt-1 text-xs text-gray-500">Markdown supported. Displayed on the public Author Guidelines page.</p>
-                <textarea id="author_guidelines" rows={18}
-                    className="mt-2 block w-full rounded-md border-gray-300 font-mono text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={data.author_guidelines}
-                    onChange={(e) => setData('author_guidelines', e.target.value)} />
+                <p className="mt-1 text-xs text-gray-500">Displayed on the public Author Guidelines page.</p>
+                <RichTextEditor id="author_guidelines" rows={18} className="mt-2" value={data.author_guidelines}
+                    onChange={(html) => setData('author_guidelines', html)} />
                 <InputError className="mt-2" message={errors.author_guidelines} />
             </div>
             <div className="flex items-center gap-3">
@@ -648,10 +647,8 @@ function PoliciesTab({ journal }) {
             <div>
                 <InputLabel htmlFor="review_policy" value="Review Policy" />
                 <p className="mt-1 text-xs text-gray-500">Describe the peer review process, blind review type, and editorial standards.</p>
-                <textarea id="review_policy" rows={18}
-                    className="mt-2 block w-full rounded-md border-gray-300 font-mono text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={data.review_policy}
-                    onChange={(e) => setData('review_policy', e.target.value)} />
+                <RichTextEditor id="review_policy" rows={18} className="mt-2" value={data.review_policy}
+                    onChange={(html) => setData('review_policy', html)} />
                 <InputError className="mt-2" message={errors.review_policy} />
             </div>
             <div className="flex items-center gap-3">

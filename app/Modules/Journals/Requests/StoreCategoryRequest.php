@@ -2,11 +2,14 @@
 
 namespace App\Modules\Journals\Requests;
 
+use App\Modules\Journals\Requests\Concerns\SanitizesHtmlFields;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreCategoryRequest extends FormRequest
 {
+    use SanitizesHtmlFields;
+
     public function authorize(): bool
     {
         return $this->user()->can('manage-journals');
@@ -17,6 +20,8 @@ class StoreCategoryRequest extends FormRequest
         if ($this->parent_id === '') {
             $this->merge(['parent_id' => null]);
         }
+
+        $this->sanitizeHtmlFields(['description']);
     }
 
     public function rules(): array

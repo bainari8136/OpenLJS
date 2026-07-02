@@ -18,7 +18,8 @@ function CategoryNode({ category, categories }) {
                 <div>
                     <h2 className="text-lg font-semibold text-gray-900">{category.name}</h2>
                     {category.description && (
-                        <p className="mt-1 text-sm leading-relaxed text-gray-600 whitespace-pre-line">{category.description}</p>
+                        <div className="prose prose-sm mt-1 max-w-none text-gray-600"
+                            dangerouslySetInnerHTML={{ __html: category.description }} />
                     )}
                 </div>
             </div>

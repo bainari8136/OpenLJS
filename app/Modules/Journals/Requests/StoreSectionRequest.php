@@ -2,10 +2,13 @@
 
 namespace App\Modules\Journals\Requests;
 
+use App\Modules\Journals\Requests\Concerns\SanitizesHtmlFields;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSectionRequest extends FormRequest
 {
+    use SanitizesHtmlFields;
+
     public function authorize(): bool
     {
         return $this->user()->can('manage-journals');
@@ -16,6 +19,8 @@ class StoreSectionRequest extends FormRequest
         if ($this->word_count_limit === '') {
             $this->merge(['word_count_limit' => null]);
         }
+
+        $this->sanitizeHtmlFields(['description', 'policy']);
     }
 
     public function rules(): array

@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^11.3",
         "laravel/tinker": "^3.0",
+        "mews/purifier": "^3.4",
         "spatie/laravel-permission": "^8.1",
         "tightenco/ziggy": "^2.0"
     },

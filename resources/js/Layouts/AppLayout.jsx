@@ -2,20 +2,30 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AppLayout({ journal, children }) {
-    const { auth } = usePage().props;
+    const { auth, site } = usePage().props;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const journalName = journal?.title ?? 'OpenLJS';
+    const journalName = journal?.title ?? site?.name ?? 'OpenLJS';
     const j = (path) => journal?.slug ? `/j/${journal.slug}${path}` : '/';
+
+    const socialLinks = [
+        { label: 'Twitter', href: site?.social?.twitter },
+        { label: 'Facebook', href: site?.social?.facebook },
+        { label: 'LinkedIn', href: site?.social?.linkedin },
+        { label: 'Instagram', href: site?.social?.instagram },
+    ].filter((s) => s.href);
 
     return (
         <div className="min-h-screen bg-white">
-            {journal?.slug && (
-                <Head>
-                    <link rel="alternate" type="application/rss+xml" title={`${journalName} - RSS Feed`} href={`/j/${journal.slug}/feed/rss`} />
-                    <link rel="alternate" type="application/atom+xml" title={`${journalName} - Atom Feed`} href={`/j/${journal.slug}/feed/atom`} />
-                </Head>
-            )}
+            <Head>
+                {site?.favicon_url && <link rel="icon" href={site.favicon_url} />}
+                {journal?.slug && (
+                    <>
+                        <link rel="alternate" type="application/rss+xml" title={`${journalName} - RSS Feed`} href={`/j/${journal.slug}/feed/rss`} />
+                        <link rel="alternate" type="application/atom+xml" title={`${journalName} - Atom Feed`} href={`/j/${journal.slug}/feed/atom`} />
+                    </>
+                )}
+            </Head>
 
             {/* Top nav */}
             <nav className="border-b border-gray-200 bg-white">
@@ -155,7 +165,7 @@ export default function AppLayout({ journal, children }) {
 
             {/* Footer */}
             <footer className="border-t border-gray-200 bg-gray-50 mt-16">
-                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-4">
                     <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                         <div className="flex items-center gap-2">
                             <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-900">
@@ -163,10 +173,25 @@ export default function AppLayout({ journal, children }) {
                             </div>
                             <span className="text-sm text-gray-500">{journalName}</span>
                         </div>
+
+                        {socialLinks.length > 0 && (
+                            <div className="flex items-center gap-4">
+                                {socialLinks.map((s) => (
+                                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                                        className="text-sm text-gray-500 hover:text-blue-900">
+                                        {s.label}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+
                         <p className="text-sm text-gray-400">
                             Powered by <span className="font-medium text-blue-900">OpenLJS</span>
                         </p>
                     </div>
+                    {site?.footer_text && (
+                        <p className="text-center text-xs text-gray-400 whitespace-pre-wrap sm:text-left">{site.footer_text}</p>
+                    )}
                 </div>
             </footer>
         </div>
