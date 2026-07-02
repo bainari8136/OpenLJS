@@ -27,6 +27,14 @@ class UpdateJournalRequest extends FormRequest
             'is_active' => ['boolean'],
             'submissions_enabled' => ['boolean'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'principal_contact_name' => ['nullable', 'string', 'max:255'],
+            'principal_contact_email' => ['nullable', 'email', 'max:255'],
+            'principal_contact_phone' => ['nullable', 'string', 'max:50'],
+            'principal_contact_affiliation' => ['nullable', 'string', 'max:255'],
+            'principal_contact_mailing_address' => ['nullable', 'string', 'max:1000'],
+            'tech_support_name' => ['nullable', 'string', 'max:255'],
+            'tech_support_email' => ['nullable', 'email', 'max:255'],
+            'tech_support_phone' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

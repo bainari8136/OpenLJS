@@ -9,13 +9,16 @@ use Illuminate\Support\Str;
 class JournalSection extends Model
 {
     protected $fillable = [
-        'journal_id', 'title', 'slug', 'description',
-        'submission_guidelines', 'is_active', 'sort_order',
+        'journal_id', 'title', 'abbreviation', 'slug', 'description', 'policy',
+        'submission_guidelines', 'word_count_limit', 'identify_as',
+        'is_peer_reviewed', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
+        'is_peer_reviewed' => 'boolean',
         'sort_order' => 'integer',
+        'word_count_limit' => 'integer',
     ];
 
     protected static function booted(): void

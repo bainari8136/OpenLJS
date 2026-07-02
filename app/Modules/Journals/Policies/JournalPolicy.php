@@ -41,4 +41,9 @@ class JournalPolicy
     {
         return $user->can('manage-journals');
     }
+
+    public function manageCategories(User $user, Journal $journal): bool
+    {
+        return $user->can('manage-journals');
+    }
 }

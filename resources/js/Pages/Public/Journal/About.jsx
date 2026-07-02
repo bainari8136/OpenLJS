@@ -34,6 +34,28 @@ export default function About({ journal }) {
                     {journal.issn_print && <p>ISSN (Print): {journal.issn_print}</p>}
                     {journal.issn_online && <p>ISSN (Online): {journal.issn_online}</p>}
                 </div>
+
+                {journal.principal_contact_name && (
+                    <section>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-3">Contact</h2>
+                        <div className="text-sm text-gray-600 space-y-1">
+                            <p className="font-medium text-gray-900">{journal.principal_contact_name}</p>
+                            {journal.principal_contact_affiliation && <p>{journal.principal_contact_affiliation}</p>}
+                            {journal.principal_contact_mailing_address && (
+                                <p className="whitespace-pre-wrap">{journal.principal_contact_mailing_address}</p>
+                            )}
+                            {journal.principal_contact_email && (
+                                <p>
+                                    Email:{' '}
+                                    <a href={`mailto:${journal.principal_contact_email}`} className="text-blue-900 hover:underline">
+                                        {journal.principal_contact_email}
+                                    </a>
+                                </p>
+                            )}
+                            {journal.principal_contact_phone && <p>Phone: {journal.principal_contact_phone}</p>}
+                        </div>
+                    </section>
+                )}
             </div>
         </AppLayout>
     );

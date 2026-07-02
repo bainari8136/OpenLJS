@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Journals\Controllers\JournalCategoryController;
 use App\Modules\Journals\Controllers\JournalController;
 use App\Modules\Journals\Controllers\JournalEditorialMemberController;
 use App\Modules\Journals\Controllers\JournalSectionController;
@@ -24,6 +25,11 @@ Route::middleware(['auth', 'verified'])->prefix('journals')->name('journals.')->
     Route::post('/{journal}/editorial-members', [JournalEditorialMemberController::class, 'store'])->name('editorial-members.store');
     Route::patch('/{journal}/editorial-members/{member}', [JournalEditorialMemberController::class, 'update'])->name('editorial-members.update');
     Route::delete('/{journal}/editorial-members/{member}', [JournalEditorialMemberController::class, 'destroy'])->name('editorial-members.destroy');
+
+    // Categories (nested under journal)
+    Route::post('/{journal}/categories', [JournalCategoryController::class, 'store'])->name('categories.store');
+    Route::patch('/{journal}/categories/{category}', [JournalCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/{journal}/categories/{category}', [JournalCategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 // Public journal pages — keep after admin routes to avoid slug conflicts
@@ -32,4 +38,5 @@ Route::prefix('j/{journal:slug}')->name('journal.')->group(function () {
     Route::get('/about', [PublicJournalController::class, 'about'])->name('about');
     Route::get('/author-guidelines', [PublicJournalController::class, 'guidelines'])->name('guidelines');
     Route::get('/editorial-team', [PublicJournalController::class, 'editorialTeam'])->name('editorial_team');
+    Route::get('/categories', [PublicJournalController::class, 'categories'])->name('categories');
 });

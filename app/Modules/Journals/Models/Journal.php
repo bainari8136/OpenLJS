@@ -15,6 +15,9 @@ class Journal extends Model
         'description', 'author_guidelines', 'review_policy', 'issn_print',
         'issn_online', 'logo_path', 'cover_image_path', 'is_active',
         'submissions_enabled', 'created_by',
+        'principal_contact_name', 'principal_contact_email', 'principal_contact_phone',
+        'principal_contact_affiliation', 'principal_contact_mailing_address',
+        'tech_support_name', 'tech_support_email', 'tech_support_phone',
     ];
 
     protected $casts = [
@@ -44,6 +47,22 @@ class Journal extends Model
     public function userRoles(): HasMany
     {
         return $this->hasMany(JournalUserRole::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(JournalCategory::class)->orderBy('sort_order');
+    }
+
+    public function rootCategories(): HasMany
+    {
+        return $this->hasMany(JournalCategory::class)->whereNull('parent_id')->orderBy('sort_order');
+    }
+
+    public function activeRootCategories(): HasMany
+    {
+        return $this->hasMany(JournalCategory::class)
+            ->whereNull('parent_id')->where('is_active', true)->orderBy('sort_order');
     }
 
     public function editorialMembers(): HasMany

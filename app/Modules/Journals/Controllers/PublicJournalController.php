@@ -51,6 +51,11 @@ class PublicJournalController extends Controller
                 'issn_print' => $journal->issn_print,
                 'issn_online' => $journal->issn_online,
                 'logo_url' => $journal->logo_path ? asset('storage/'.$journal->logo_path) : null,
+                'principal_contact_name' => $journal->principal_contact_name,
+                'principal_contact_email' => $journal->principal_contact_email,
+                'principal_contact_phone' => $journal->principal_contact_phone,
+                'principal_contact_affiliation' => $journal->principal_contact_affiliation,
+                'principal_contact_mailing_address' => $journal->principal_contact_mailing_address,
             ],
         ]);
     }
@@ -66,6 +71,28 @@ class PublicJournalController extends Controller
                 'author_guidelines' => $journal->author_guidelines,
                 'logo_url' => $journal->logo_path ? asset('storage/'.$journal->logo_path) : null,
             ],
+        ]);
+    }
+
+    public function categories(Journal $journal): Response
+    {
+        abort_unless($journal->is_active, 404);
+
+        return Inertia::render('Public/Journal/Categories', [
+            'journal' => [
+                'title' => $journal->title,
+                'slug' => $journal->slug,
+                'logo_url' => $journal->logo_path ? asset('storage/'.$journal->logo_path) : null,
+            ],
+            'categories' => $journal->categories->where('is_active', true)->values()->map(fn ($c) => [
+                'id' => $c->id,
+                'parent_id' => $c->parent_id,
+                'name' => $c->name,
+                'slug' => $c->slug,
+                'description' => $c->description,
+                'cover_image_url' => $c->cover_image_path ? asset('storage/'.$c->cover_image_path) : null,
+                'sort_order' => $c->sort_order,
+            ]),
         ]);
     }
 

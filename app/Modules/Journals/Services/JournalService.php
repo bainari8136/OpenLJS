@@ -4,6 +4,7 @@ namespace App\Modules\Journals\Services;
 
 use App\Models\User;
 use App\Modules\Journals\Models\Journal;
+use App\Modules\Journals\Models\JournalCategory;
 use App\Modules\Journals\Models\JournalEditorialMember;
 use App\Modules\Journals\Models\JournalSection;
 use Illuminate\Http\UploadedFile;
@@ -81,5 +82,43 @@ class JournalService
     public function deleteEditorialMember(JournalEditorialMember $member): void
     {
         $member->delete();
+    }
+
+    public function createCategory(Journal $journal, array $data): JournalCategory
+    {
+        $data['journal_id'] = $journal->id;
+        $data['sort_order'] = $journal->categories()
+            ->where('parent_id', $data['parent_id'] ?? null)
+            ->max('sort_order') + 1;
+
+        return JournalCategory::create($data);
+    }
+
+    public function updateCategory(JournalCategory $category, array $data): JournalCategory
+    {
+        $category->update($data);
+
+        return $category->fresh();
+    }
+
+    public function uploadCategoryCoverImage(JournalCategory $category, UploadedFile $file): JournalCategory
+    {
+        if ($category->cover_image_path) {
+            Storage::disk('public')->delete($category->cover_image_path);
+        }
+
+        $path = $file->store("journals/{$category->journal_id}/categories/{$category->id}/covers", 'public');
+        $category->update(['cover_image_path' => $path]);
+
+        return $category->fresh();
+    }
+
+    public function deleteCategory(JournalCategory $category): void
+    {
+        if ($category->cover_image_path) {
+            Storage::disk('public')->delete($category->cover_image_path);
+        }
+
+        $category->delete();
     }
 }

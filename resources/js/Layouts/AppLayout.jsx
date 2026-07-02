@@ -48,6 +48,9 @@ export default function AppLayout({ journal, children }) {
                             <Link href={j('/editorial-team')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Editorial Team
                             </Link>
+                            <Link href={j('/categories')} className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                                Categories
+                            </Link>
                         </div>
 
                         {/* Search */}
@@ -116,6 +119,7 @@ export default function AppLayout({ journal, children }) {
                                 { label: 'Archives', href: j('/archive') },
                                 { label: 'About', href: j('/about') },
                                 { label: 'Editorial Team', href: j('/editorial-team') },
+                                { label: 'Categories', href: j('/categories') },
                             ].map(({ label, href }) => (
                                 <Link
                                     key={href}
