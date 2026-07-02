@@ -16,6 +16,7 @@ class PermissionsSeeder extends Seeder
             'manage-settings',
             'manage-journals',
             'view-journals',
+            'manage-plugins',
 
             // Users
             'manage-users',
@@ -61,6 +62,7 @@ class PermissionsSeeder extends Seeder
                 'manage-settings',
                 'manage-journals',
                 'view-journals',
+                'manage-plugins',
                 'manage-users',
                 'assign-roles',
                 'view-users',

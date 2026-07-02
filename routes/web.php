@@ -38,5 +38,6 @@ require base_path('app/Modules/Search/routes.php');
 require base_path('app/Modules/Oai/routes.php');
 require base_path('app/Modules/Metrics/routes.php');
 require base_path('app/Modules/Settings/routes.php');
+require base_path('app/Modules/Plugins/routes.php');
 
 require __DIR__.'/auth.php';
