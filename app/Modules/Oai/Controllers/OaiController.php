@@ -3,8 +3,10 @@
 namespace App\Modules\Oai\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Core\Facades\Hook;
 use App\Modules\Issues\Models\Article;
 use App\Modules\Journals\Models\Journal;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -17,13 +19,13 @@ class OaiController extends Controller
         $verb = $request->get('verb', '');
 
         $xml = match ($verb) {
-            'Identify'            => $this->identify($request),
+            'Identify' => $this->identify($request),
             'ListMetadataFormats' => $this->listMetadataFormats($request),
-            'ListSets'            => $this->listSets($request),
-            'ListIdentifiers'     => $this->listIdentifiers($request),
-            'ListRecords'         => $this->listRecords($request),
-            'GetRecord'           => $this->getRecord($request),
-            default               => $this->error($request, 'badVerb', 'Illegal OAI verb.'),
+            'ListSets' => $this->listSets($request),
+            'ListIdentifiers' => $this->listIdentifiers($request),
+            'ListRecords' => $this->listRecords($request),
+            'GetRecord' => $this->getRecord($request),
+            default => $this->error($request, 'badVerb', 'Illegal OAI verb.'),
         };
 
         return response($xml, 200, ['Content-Type' => 'text/xml; charset=utf-8']);
@@ -48,7 +50,7 @@ class OaiController extends Controller
 
     private function listMetadataFormats(Request $request): string
     {
-        return $this->envelope($request, 'ListMetadataFormats', <<<XML
+        return $this->envelope($request, 'ListMetadataFormats', <<<'XML'
         <metadataFormat>
           <metadataPrefix>oai_dc</metadataPrefix>
           <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
@@ -73,7 +75,9 @@ class OaiController extends Controller
     private function listIdentifiers(Request $request): string
     {
         [$query, $error] = $this->buildArticleQuery($request);
-        if ($error) return $error;
+        if ($error) {
+            return $error;
+        }
 
         [$articles, $token] = $this->paginate($query, $request->get('resumptionToken'));
 
@@ -84,13 +88,15 @@ class OaiController extends Controller
         $headers = $articles->map(fn ($a) => $this->articleHeader($a))->implode("\n");
         $tokenXml = $token ? "<resumptionToken>{$token}</resumptionToken>" : '';
 
-        return $this->envelope($request, 'ListIdentifiers', $headers . "\n" . $tokenXml);
+        return $this->envelope($request, 'ListIdentifiers', $headers."\n".$tokenXml);
     }
 
     private function listRecords(Request $request): string
     {
         [$query, $error] = $this->buildArticleQuery($request);
-        if ($error) return $error;
+        if ($error) {
+            return $error;
+        }
 
         [$articles, $token] = $this->paginate($query->with(['journal', 'issue', 'files', 'submission.authors']), $request->get('resumptionToken'));
 
@@ -98,10 +104,10 @@ class OaiController extends Controller
             return $this->error($request, 'noRecordsMatch', 'No records match the given criteria.');
         }
 
-        $records  = $articles->map(fn ($a) => $this->articleRecord($a))->implode("\n");
+        $records = $articles->map(fn ($a) => $this->articleRecord($a))->implode("\n");
         $tokenXml = $token ? "<resumptionToken>{$token}</resumptionToken>" : '';
 
-        return $this->envelope($request, 'ListRecords', $records . "\n" . $tokenXml);
+        return $this->envelope($request, 'ListRecords', $records."\n".$tokenXml);
     }
 
     private function getRecord(Request $request): string
@@ -113,7 +119,7 @@ class OaiController extends Controller
 
         $identifier = $request->get('identifier', '');
         $id = $this->parseIdentifier($identifier);
-        if (!$id) {
+        if (! $id) {
             return $this->error($request, 'idDoesNotExist', 'The identifier does not exist.');
         }
 
@@ -121,7 +127,7 @@ class OaiController extends Controller
             ->whereNotNull('published_at')
             ->find($id);
 
-        if (!$article) {
+        if (! $article) {
             return $this->error($request, 'idDoesNotExist', 'The identifier does not exist.');
         }
 
@@ -162,13 +168,13 @@ class OaiController extends Controller
         $offset = 0;
         if ($token) {
             $decoded = base64_decode($token, strict: true);
-            $offset  = (int) ($decoded ?: 0);
+            $offset = (int) ($decoded ?: 0);
         }
 
-        $total    = $query->count();
+        $total = $query->count();
         $articles = $query->skip($offset)->take(self::PAGE_SIZE)->get();
         $nextOffset = $offset + self::PAGE_SIZE;
-        $nextToken  = $nextOffset < $total ? base64_encode((string) $nextOffset) : null;
+        $nextToken = $nextOffset < $total ? base64_encode((string) $nextOffset) : null;
 
         return [$articles, $nextToken];
     }
@@ -184,10 +190,8 @@ class OaiController extends Controller
 
     private function articleRecord(Article $a): string
     {
-        $authors = $a->submission?->authors->map(fn ($au) => "<dc:creator>{$this->e($au->name)}</dc:creator>")->implode("\n") ?? '';
-        $keywords = collect($a->keywords ?? [])->map(fn ($kw) => "<dc:subject>{$this->e($kw)}</dc:subject>")->implode("\n");
-        $identifier = $a->doi ? "<dc:identifier>https://doi.org/{$this->e($a->doi)}</dc:identifier>"
-            : "<dc:identifier>{$this->e(route('journal.article', [$a->journal?->slug ?? '', $a->slug]))}</dc:identifier>";
+        $fields = Hook::filter('Oai::DublinCore::fields', $this->dublinCoreFields($a), $a);
+        $body = $this->renderDublinCoreFields($fields);
 
         return <<<XML
         <record>
@@ -198,25 +202,51 @@ class OaiController extends Controller
               xmlns:dc="http://purl.org/dc/elements/1.1/"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-              <dc:title>{$this->e($a->title)}</dc:title>
-              {$authors}
-              <dc:description>{$this->e($a->abstract ?? '')}</dc:description>
-              {$keywords}
-              <dc:date>{$this->toOaiDate($a->published_at)}</dc:date>
-              <dc:type>journal article</dc:type>
-              <dc:source>{$this->e($a->journal?->title ?? '')}</dc:source>
-              <dc:language>en</dc:language>
-              {$identifier}
+              {$body}
             </oai_dc:dc>
           </metadata>
         </record>
         XML;
     }
 
+    /**
+     * Base Dublin Core fields for an article, keyed by DC element name to an
+     * array of values (repeatable elements — e.g. multiple dc:creator).
+     * Filterable via the Oai::DublinCore::fields hook so plugins (e.g. a DOI
+     * registration plugin) can add or amend elements without touching this
+     * controller — see PLUGINS.md §9.
+     */
+    private function dublinCoreFields(Article $a): array
+    {
+        return [
+            'title' => [$a->title],
+            'creator' => $a->submission?->authors->pluck('name')->all() ?? [],
+            'description' => [$a->abstract ?? ''],
+            'subject' => collect($a->keywords ?? [])->all(),
+            'date' => [$this->toOaiDate($a->published_at)],
+            'type' => ['journal article'],
+            'source' => [$a->journal?->title ?? ''],
+            'language' => ['en'],
+            'identifier' => [$a->doi ? "https://doi.org/{$a->doi}" : route('journal.article', [$a->journal?->slug ?? '', $a->slug])],
+        ];
+    }
+
+    private function renderDublinCoreFields(array $fields): string
+    {
+        $xml = [];
+        foreach ($fields as $element => $values) {
+            foreach ((array) $values as $value) {
+                $xml[] = "<dc:{$element}>{$this->e((string) $value)}</dc:{$element}>";
+            }
+        }
+
+        return implode("\n", $xml);
+    }
+
     private function envelope(Request $request, string $verb, string $inner): string
     {
         $date = now()->toIso8601String();
-        $url  = $this->e(route('oai'));
+        $url = $this->e(route('oai'));
 
         return <<<XML
         <?xml version="1.0" encoding="UTF-8"?>
@@ -235,7 +265,7 @@ class OaiController extends Controller
     private function error(Request $request, string $code, string $message): string
     {
         $date = now()->toIso8601String();
-        $url  = $this->e(route('oai'));
+        $url = $this->e(route('oai'));
 
         return <<<XML
         <?xml version="1.0" encoding="UTF-8"?>
@@ -251,7 +281,7 @@ class OaiController extends Controller
 
     private function makeIdentifier(Article $a): string
     {
-        return 'oai:' . parse_url(config('app.url'), PHP_URL_HOST) . ':article/' . $a->id;
+        return 'oai:'.parse_url(config('app.url'), PHP_URL_HOST).':article/'.$a->id;
     }
 
     private function parseIdentifier(string $identifier): ?int
@@ -259,13 +289,19 @@ class OaiController extends Controller
         if (preg_match('/^oai:[^:]+:article\/(\d+)$/', $identifier, $m)) {
             return (int) $m[1];
         }
+
         return null;
     }
 
     private function toOaiDate(mixed $date): string
     {
-        if (!$date) return now()->toIso8601String();
-        if (is_string($date)) $date = \Carbon\Carbon::parse($date);
+        if (! $date) {
+            return now()->toIso8601String();
+        }
+        if (is_string($date)) {
+            $date = Carbon::parse($date);
+        }
+
         return $date->toIso8601String();
     }
 

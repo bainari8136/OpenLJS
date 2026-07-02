@@ -30,7 +30,8 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "OpenLJS\\Plugins\\CrossrefDoi\\": "plugins/generic/crossref-doi/src/"
         }
     },
     "autoload-dev": {

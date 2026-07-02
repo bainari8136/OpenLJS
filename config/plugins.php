@@ -1,5 +1,7 @@
 <?php
 
+use OpenLJS\Plugins\CrossrefDoi\CrossrefDoiPlugin;
+
 return [
     /*
     |--------------------------------------------------------------------
@@ -11,9 +13,8 @@ return [
     | (see PLUGINS.md §4). `php artisan plugin:discover` reads this list and
     | upserts each one into the `plugins` table, disabled by default.
     |
-    | Nothing shipped here in Phase 1 — this is the registration point real
-    | plugin packages hook into once they exist.
-    |
     */
-    'registered' => [],
+    'registered' => [
+        CrossrefDoiPlugin::class,
+    ],
 ];

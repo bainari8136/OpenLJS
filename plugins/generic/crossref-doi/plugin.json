@@ -1,0 +1,8 @@
+{
+    "category": "generic",
+    "name": "crossref-doi",
+    "class": "OpenLJS\\Plugins\\CrossrefDoi\\CrossrefDoiPlugin",
+    "displayName": "Crossref DOI",
+    "description": "Generates DOIs for published articles from a per-journal pattern and deposits them with Crossref.",
+    "version": "1.0.0"
+}

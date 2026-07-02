@@ -2,6 +2,7 @@
 
 namespace App\Modules\Issues\Services;
 
+use App\Modules\Core\Facades\Hook;
 use App\Modules\Core\Models\ActivityLog;
 use App\Modules\Issues\Models\Article;
 use App\Modules\Issues\Models\ArticleFile;
@@ -18,11 +19,11 @@ class PublishingService
     public function createIssue(Journal $journal, array $data): Issue
     {
         return Issue::create([
-            'journal_id'  => $journal->id,
-            'title'       => $data['title'],
-            'volume'      => $data['volume'] ?? null,
-            'number'      => $data['number'] ?? null,
-            'year'        => $data['year'],
+            'journal_id' => $journal->id,
+            'title' => $data['title'],
+            'volume' => $data['volume'] ?? null,
+            'number' => $data['number'] ?? null,
+            'year' => $data['year'],
             'description' => $data['description'] ?? null,
         ]);
     }
@@ -30,12 +31,13 @@ class PublishingService
     public function updateIssue(Issue $issue, array $data): Issue
     {
         $issue->update([
-            'title'       => $data['title'],
-            'volume'      => $data['volume'] ?? null,
-            'number'      => $data['number'] ?? null,
-            'year'        => $data['year'],
+            'title' => $data['title'],
+            'volume' => $data['volume'] ?? null,
+            'number' => $data['number'] ?? null,
+            'year' => $data['year'],
             'description' => $data['description'] ?? null,
         ]);
+
         return $issue->fresh();
     }
 
@@ -56,11 +58,11 @@ class PublishingService
         return DB::transaction(function () use ($submission) {
             $article = Article::create([
                 'submission_id' => $submission->id,
-                'journal_id'    => $submission->journal_id,
-                'title'         => $submission->title,
-                'abstract'      => $submission->abstract,
-                'keywords'      => $submission->keywords,
-                'slug'          => Article::generateSlug($submission->title, $submission->journal_id),
+                'journal_id' => $submission->journal_id,
+                'title' => $submission->title,
+                'abstract' => $submission->abstract,
+                'keywords' => $submission->keywords,
+                'slug' => Article::generateSlug($submission->title, $submission->journal_id),
             ]);
 
             // Copy galley files to article_files
@@ -72,9 +74,9 @@ class PublishingService
                 $ext = strtolower(pathinfo($galley->original_name, PATHINFO_EXTENSION));
                 $fileType = in_array($ext, ['pdf', 'html', 'xml', 'epub']) ? $ext : 'pdf';
                 ArticleFile::create([
-                    'article_id'   => $article->id,
-                    'label'        => strtoupper($fileType),
-                    'file_type'    => $fileType,
+                    'article_id' => $article->id,
+                    'label' => strtoupper($fileType),
+                    'file_type' => $fileType,
                     'storage_path' => $galley->storage_path,
                 ]);
             }
@@ -94,12 +96,14 @@ class PublishingService
     {
         abort_unless($article->journal_id === $issue->journal_id, 422);
         $article->update(['issue_id' => $issue->id]);
+
         return $article->fresh();
     }
 
     public function removeFromIssue(Article $article): Article
     {
         $article->update(['issue_id' => null]);
+
         return $article->fresh();
     }
 
@@ -117,6 +121,8 @@ class PublishingService
                 $article->update(['published_at' => $now]);
                 $article->submission?->update(['status' => Submission::STATUS_PUBLISHED]);
                 $article->submission?->submittingAuthor?->notify(new ArticlePublished($article));
+
+                Hook::action('Issues::PublishingService::afterPublish', $article);
             });
 
             ActivityLog::record(
@@ -136,6 +142,7 @@ class PublishingService
             $issue->update(['is_published' => false, 'published_at' => null]);
             $issue->articles()->update(['published_at' => null]);
         });
+
         return $issue->fresh();
     }
 }
